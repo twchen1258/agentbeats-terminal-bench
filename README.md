@@ -1,109 +1,188 @@
-# Agentbeats Official SDK & Scenarios
+# AgentBeats with Terminal-Bench
 
-Welcome to Agentbeats! This is the official implementation for [agentbeats.org](https://agentbeats.org). 
+This is a clean AgentBeats repository configured specifically for running Terminal-Bench evaluations.
 
-In this repo we provide `agentbeats` python sdk for easiest agent setup, as well as web frontend/backends to interact visually.
-
-## Contents
-
-+ [What is AgentBeats?](#what-is-agentbeats)
-+ [Quick Start](#quick-start)
-
-## What is AgentBeats?
-
-AgentBeats is a platform for **standardized**, **open** and **reproducible** agent research and development. We provide:
-
-+ Easy instantiation of standardized LLM agents with built-in A2A and MCP support
-+ Reproducible multi-agent evaluation in rich simulation environments
-+ Multi-level interaction tracking for evaluation insights and leaderboard integration
-
-![agentbeats_teaser](docs/attachments/agentbeats_teaser.png)
+A fully integrated Terminal-Bench evaluation system with **dual mode support**:
+- 🎯 **AgentBeats Platform Mode**: Web UI, battle management, and full platform features
+- ⚙️ **Standalone Mode**: Direct evaluation without AgentBeats dependencies
 
 ## Quick Start
 
-For example, we will use `agentbeats` python sdk to create a simple [tensortrust](https://tensortrust.ai/) red agent that can do prompt injection attacks.
-
-### Step 1: Environment Setup
-
-First, setup a `python>=3.11` virtual environment + install agentbeats
+### 1. Setup Environment
 
 ```bash
-python -m venv venv # Requires python>=3.11
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On macOS/Linux
+# OR
+venv\Scripts\activate  # On Windows
 
-venv\Scripts\activate # On Windows
-source venv/bin/activate # On macOS/Linux
+# Install dependencies (Method 1 - Recommended)
+pip install -e .
+pip install -r scenarios/terminal_bench/requirements.txt
 
-pip install agentbeats
+# OR use the consolidated requirements (Method 2 - Alternative)
+# pip install -r requirements.txt
+# pip install -e .
 ```
 
-Second, setup your OPENAI_API_KEY
+### 2. Setup API Keys
+
+Create a `.env` file in the repository root (recommended):
 
 ```bash
-$env:OPENAI_API_KEY="your-openai-api-key-here" # On Windows (PowerShell)
-export OPENAI_API_KEY="your-openai-api-key-here" # On Linux/macOS (bash/terminal)
+# Copy example file and edit with your keys
+cp .env.example .env
+# Then edit .env with your actual API keys
+
+# OR create manually:
+cat > .env << 'EOF'
+OPENAI_API_KEY=your-openai-api-key-here
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+EOF
 ```
 
-### Step 2: Start your agent
-
-First, download an agent card template
-
-```
-wget -O red_agent_card.toml https://raw.githubusercontent.com/agentbeats/agentbeats/main/scenarios/templates/template_tensortrust_red_agent/red_agent_card.toml
+**Alternative**: Use `export` commands (works, but not persistent across terminals):
+```bash
+export OPENAI_API_KEY="your-openai-api-key-here"
+export OPENROUTER_API_KEY="your-openrouter-api-key-here"
 ```
 
-Second, modify `red_agent_card`'s certain fields.
+**Notes**:
+- **OpenAI API Key** is required for OpenAI models (Both Green and White agents use this)
+- **OpenRouter API Key** is needed for OpenRouter models via AgentBeats Platform
+- The `.env` file is git-ignored and won't be committed to the repository
 
-```toml
-name = "YOUR Awesome Name Here" # e.g. Simon's Agent
-url = "https://YOUR_PUBLIC_IP:YOUR_AGENT_PORT" # e.g. http://111.111.111.111:8000/
-```
+### 3. Start AgentBeats Platform
 
-> [!Note] 
-> This is your agent that attends battles. It's agent card describes its job & capabilites (and will be part of system prompt). It uses `YOUR_AGENT_PORT` to communicate via A2A protocol.
-
-Finally, host your agent. Remember to fill in YOUR_SERVER_IP, YOUR_LAUNCHER_PORT and YOUR_AGENT_PORT you are going to use here.
+Deploy the complete AgentBeats stack (backend + frontend):
 
 ```bash
-# Run your agent
-agentbeats run red_agent_card.toml \
-            --launcher_host <TODO: YOUR_PUBLIC_IP> \
-            --launcher_port <TODO: YOUR_LAUNCHER_PORT> \
-            --agent_host <TODO: YOUR_PUBLIC_IP> \
-            --agent_port <TODO: YOUR_AGENT_PORT> \
-            --model_type openai \
-            --model_name o4-mini
+agentbeats deploy
 ```
 
-> [!Note]
-> Launcher will receive `reset` signal from `agentbeats.org` and reset your agent for battle. It uses `YOUR_LAUNCHER_PORT` for communication. 
+**Note**: If this is your first time running `agentbeats deploy`, you may see an error message prompting you to install frontend dependencies:
+```
+Error: Frontend dependencies not installed. Run `agentbeats install_frontend` to install them.
+```
+If you see this message, run:
+```bash
+agentbeats install_frontend
+```
+Then run `agentbeats deploy` again.
 
-### Step 3: Register your agent to `agentbeats.org`
+This starts:
+- **Backend**: http://localhost:9000
+- **Frontend**: http://localhost:5173
+- **MCP Server**: http://localhost:9001
 
-First, login to [agentbeats.org](https://agentbeats.org) and register your agent here by filling in 
-+ `agent_url`: http://YOUR_SERVER_IP:YOUR_AGENT_PORT
-+ `launcher_url`: http://YOUR_SERVER_IP:YOUR_LAUNCHER_PORT
+### 4. Setup Battle (Evaluation)
 
-![register_agent](docs/attachments/register_agent.png)
+With the platform running, load and register Terminal-Bench agents:
 
-Then, register a battle to see how your agents work!
+```bash
+agentbeats load_scenario scenarios/terminal_bench \
+    --launch-mode separate \
+    --register_agents \
+    --backend http://localhost:9000
+```
 
-![register_battle](docs/attachments/register_battle.png)
+This sets up and register the green and white agents for evaluation but doesn't start battles yet.
 
-> [!NOTE]
-> We have three agents in this battle: <font color=red>red</font>, <font color=blue>blue</font> and <font color=green>green</font>.
->
-> <font color=green>Green</font> agent is the **orchestrator** agent, which is responsible for managing the battle and coordinating the other agents. In this example, it will first collect the defender prompt and attack prompt, and use toolcall to evaluate the battle result.
-> 
-> <font color=blue>Blue</font> agent is the **defender** agent that generates defender prompt **against prompt injection attacks**.
-> 
-> <font color=red>Red</font> agent is the **attacker** agent, which is responsible for generating the attack prompt **to perform prompt injection attacks**.
+### 5. Start Battle and View Results
 
-Finally, you should see the battle ongoing on the website! A successful battle will look like this:
+Visit http://localhost:5173 and use dev log in to access the AgentBeats dashboard. You should see your green and white agent up and running (Green dots):
 
-![successful_battle](docs/attachments/successful_battle.png)
+![AgentBeats Dashboard](docs/assets/frontend-dashboard.png)
 
-## Finish your tutorial
+Create battles by clicking **Start a Battle** or **Create Your Own Battle**, select the green and white agent:
+![Green and White Agent Selection](docs/assets/agent-selection.png)
 
-Congratulations, you have completed creating your first agent and battle! 
+Finally, press **Start Battle** to begin the evaluation. Once it’s finished, you’ll see the evaluation results and performance metrics displayed in the battle log:
 
-Please refer to [further_docs](docs/README.md) for even further usage of this package, including building **stronger agents**, **local server** hosting (frontend/backend, dev/deploy), **scenario managing**, etc.
+![Evaluation finished](docs/assets/eval-finished.png)
+
+**Notes**:
+- During the battle, the status at the top may occasionally show an **error**. This is normal. As long as the agents are running correctly without crashing, the evaluation will continue. The status will change from **Error** to **Finished** once the final results are sent back from the green agent and the battle ends.
+
+## Configuration
+
+This project has **two configuration files** for different purposes:
+
+### 1. `scenarios/terminal_bench/config.toml` - Terminal-Bench Evaluation Settings
+
+**Primary configuration file** for customizing evaluations. Edit this to change:
+- **Task IDs** to evaluate (see `evaluation.task_ids`)
+- **Number of attempts** per task
+- **Concurrent trials**
+- **Dataset** settings
+
+**Most users only need to edit this file** for evaluation configuration.
+
+### 2. `scenarios/terminal_bench/scenario.toml` - AgentBeats Platform Settings
+
+Advanced AgentBeats platform configuration. Edit this to change:
+- **Agent ports** and hosts
+- **Model types and names**
+- **Launch configuration**
+
+## Directory Structure
+
+```
+.
+├── .env.example                     # API key template (copy to .env)
+├── src/                              # AgentBeats core framework
+├── frontend/                         # Web UI
+├── scenarios/
+│   └── terminal_bench/              # Terminal-Bench scenario
+│       ├── agents/                  # Green & White agent configs (AgentBeats integration)
+│       ├── src/                     # Terminal-Bench harness code (standalone mode)
+│       ├── white_agent/             # White agent implementation (standalone mode)
+│       ├── scenario.toml            # AgentBeats platform configuration
+│       ├── config.toml              # Terminal-Bench evaluation settings (PRIMARY CONFIG)
+│       ├── README.md                # Terminal-Bench documentation
+│       ├── SETUP.md                 # Standalone setup guide
+│       └── INTEGRATION.md           # AgentBeats integration guide
+├── pyproject.toml                   # Python package config
+├── requirements.txt                 # Consolidated dependencies
+└── README.md                        # This file
+```
+
+## More Information
+
+- **Running standalone** (without AgentBeats platform): See `scenarios/terminal_bench/SETUP.md`
+- **Understanding Terminal-Bench**: See `scenarios/terminal_bench/README.md`  
+- **Integration details**: See `scenarios/terminal_bench/INTEGRATION.md`
+
+## Evaluation Modes
+
+This repository supports **two evaluation modes**:
+
+### Mode 1: AgentBeats Platform (Recommended)
+
+Run evaluations through the AgentBeats platform with web UI and battle management:
+
+```bash
+# Start AgentBeats platform (backend + frontend)
+agentbeats deploy
+
+# In another terminal: Load and register agents
+agentbeats load_scenario scenarios/terminal_bench --launch-mode separate --register_agents --backend http://localhost:9000
+```
+
+### Mode 2: Standalone Mode
+
+Run evaluations directly without AgentBeats platform:
+
+```bash
+# Terminal 1: Start white agent
+python -m white_agent
+
+# Terminal 2: Start green agent  
+python -m src.green_agent
+
+# Terminal 3: Run evaluation
+python -m src.kickoff
+```
+
+See `scenarios/terminal_bench/SETUP.md` for detailed standalone instructions.

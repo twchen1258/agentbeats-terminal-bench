@@ -28,7 +28,7 @@ base_port = 10000           # Base port for task-scoped MCP servers
 # USAGE: ✅ Standalone (white_agent.py), ❌ AgentBeats (uses scenario.toml instead)
 [white_agent]
 host = "0.0.0.0"           # White agent host for standalone mode
-port = 8001                 # White agent port for standalone mode
+port = 8002               # White agent port for standalone mode
 model = "gpt-4o-mini"       # LLM model for white agent (standalone)
 max_iterations = 30         # Max tool call iterations for white agent
 
@@ -39,10 +39,8 @@ max_iterations = 30         # Max tool call iterations for white agent
 # list all easy tasks for now
 # USAGE: ✅ Both modes - Main setting to control which tasks are evaluated
 task_ids = [
-    "count-dataset-tokens",
+    "hello-world",
     "create-bucket",
-    "csv-to-parquet",
-    "extract-safely",
 ]
 
 

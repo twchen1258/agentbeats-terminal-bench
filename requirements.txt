@@ -1,0 +1,33 @@
+# AgentBeats with Terminal-Bench - Complete Dependencies
+# 
+# Usage:
+#   Method 1 (Recommended): pip install -e . && pip install -r scenarios/terminal_bench/requirements.txt
+#   Method 2 (Alternative):  pip install -r requirements.txt && pip install -e .
+#
+# Note: Both methods install the same packages, but -e . MUST be run at some point
+# to make AgentBeats code editable (for development and for import paths to work correctly).
+
+# AgentBeats Framework Dependencies (from pyproject.toml)
+tomli>=2
+toml
+fastmcp
+fastapi
+uvicorn
+pydantic>=2.0.0
+httpx
+a2a-sdk>=0.3.0
+paramiko>=3.5.1
+openai-agents
+openai
+sqlalchemy
+supabase
+PyJWT
+python-dotenv
+python-multipart
+google-cloud-storage
+
+# Terminal-Bench Specific Dependencies
+terminal-bench>=0.1.0
+mcp>=1.0.0
+starlette>=0.32.0
+

@@ -1,8 +1,8 @@
-# Terminal-Bench AgentBeats Integration Guide
+# Terminal-Bench AgentBeats Integration Detail
 
 ## Overview
 
-Terminal-Bench has been fully integrated with AgentBeats platform:
+In this repository, we have fully integrated Terminal-Bench with AgentBeats platform:
 
 - **Green Agent**: Fully AgentBeats-compatible with `tools.py` wrapper
 - **White Agent**: Fully AgentBeats-compatible with `tools.py` wrapper
@@ -49,7 +49,7 @@ The white agent is now fully integrated with AgentBeats:
 
 The agent card description guides the LLM to automatically use this tool when receiving Terminal-Bench messages.
 
-### 3. Configuration
+## Configuration
 
 **scenario.toml**:
 ```toml
@@ -71,70 +71,16 @@ model_name = "gpt-4o-mini"
 
 **config.toml** (Terminal-Bench specific settings):
 The green agent loads configuration from `config.toml` including:
-- `evaluation.task_ids`: List of tasks to evaluate (default: 12 easy tasks)
+- `evaluation.task_ids`: List of tasks to evaluate (default: `["hello-world","create-bucket"]`)
 - `evaluation.n_attempts`: Number of attempts per task (default: 1)
 - `evaluation.n_concurrent_trials`: Concurrent trial limit (default: 1)
 - `evaluation.timeout_multiplier`: Timeout multiplier (default: 1.0)
 - `dataset.name`: Dataset name (default: "terminal-bench-core")
 - `dataset.version`: Dataset version (default: "0.1.1")
 
-To customize which tasks to run, edit `config.toml` in the `scenarios/terminal_bench/` directory.
+To customize which tasks to run, edit the `evaluation.task_ids` section in `config.toml` in the `scenarios/terminal_bench/` directory.
 
 **Note**: The `config.toml` file is heavily commented with usage indicators showing which settings apply to standalone mode, AgentBeats mode, or both. Settings like `green_agent.*` and `white_agent.*` are only used in standalone mode - AgentBeats uses `scenario.toml` for those.
-
-## Running the Integration
-
-### Option 1: AgentBeats Platform (Recommended)
-
-1. **Install dependencies** (if not already done):
-   ```bash
-   pip install -r scenarios/terminal_bench/requirements.txt
-   ```
-
-2. **Set environment variables**:
-   ```bash
-   export OPENAI_API_KEY="your-openai-api-key"
-   ```
-
-3. **Start backend**:
-   ```bash
-   agentbeats run_backend
-   ```
-
-4. **Load and register agents**:
-   ```bash
-   agentbeats load_scenario scenarios/terminal_bench --launch-mode current --register_agents --backend http://localhost:9000
-   ```
-
-5. **Run evaluation** (or use the web UI to create battles):
-   ```bash
-   agentbeats run_scenario scenarios/terminal_bench --launch_mode current --backend http://localhost:9000 --frontend http://localhost:5173
-   ```
-
-Alternatively, you can register agents and create battles manually through the AgentBeats web UI after step 4.
-
-### Option 2: Standalone (Original)
-
-For testing without AgentBeats:
-```bash
-# Terminal 1
-python -m white_agent
-
-# Terminal 2  
-python -m src.green_agent
-
-# Terminal 3
-python -m src.kickoff
-```
-
-## Differences from Tau-Bench
-
-| Aspect | Tau-Bench | Terminal-Bench |
-|--------|-----------|----------------|
-| Green Agent | Wraps code-driven logic in tools.py | Wraps code-driven logic in tools.py ✅ |
-| White Agent | Custom A2A executor | Custom A2A executor ✅ |
-| Task Protocol | Dynamic prompt + JSON response | Task instruction + MCP execution |
-| Winner Reporting | Simple winner (green vs red) | Detailed results (accuracy, scores, etc.) |
 
 ## Backend Reporting
 
@@ -162,30 +108,12 @@ The `markdown_content` field contains the formatted results summary and is rende
 - Scores by difficulty (Easy/Medium/Hard)
 - Per-task breakdown with test results
 - Token usage per task
+- Failure mode analysis (when applicable)
 
-## Checklist Answers
+## Run Evaluation
 
-✅ **1. How to get (remote) agent URL / MCP server URL**
-   - Agent URL: Extracted from `red_battle_contexts` in `battle_start_json`
-   - MCP URL: Green agent creates task-scoped servers dynamically
-
-✅ **2. How to access LLM API**
-   - Configured via `model_type` and `model_name` in `scenario.toml`
-   - Auto-loaded from environment (OPENAI_API_KEY, etc.)
-
-✅ **3. How to report result & add traces**
-   - `update_battle_process()` for traces (not currently used, but available)
-   - `report_on_battle_end` via POST to backend with detailed JSON
-
-✅ **4. Package the repo for platform hosting**
-   - Existing: `requirements.txt`, `setup.sh`
-   - AgentBeats: `scenario.toml`, agent cards, tools.py
-   - Ready for deployment ✅
-
-## Notes
-
-- Both agents are now fully integrated and can be launched via `load_scenario`
-- Agents are automatically managed by AgentBeats (launcher handles restarts)
-- Evaluation results are saved to `eval_results/` directory
-- The white agent's `solve_terminal_bench_task` tool automatically handles dynamic MCP connections per task
-
+For detailed instructions on running Terminal-Bench evaluations with AgentBeats, see the main [README.md](../../README.md) in the root directory. The README includes:
+- Step-by-step setup instructions
+- Configuration guide for API keys
+- Platform deployment instructions
+- How to create and run battles using the web UI

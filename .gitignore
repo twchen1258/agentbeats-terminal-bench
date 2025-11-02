@@ -109,8 +109,9 @@ scenarios/battle_royale/credentials/
 scenarios/battle_royale/container_data/
 scenarios/battle_royale/monitor-html/
 
-# .env files
+# .env files (ignore user's actual keys, but track .env.example)
 .env
+!.env.example
 
 # logs folder
 logs/
@@ -142,4 +143,12 @@ scenarios/cybergym/scripts/
 # Asciinema
 asciinema_playground
 **/asciinema_outputs/
+
+# --- Terminal-Bench ---
+# Evaluation results (generated at runtime)
+scenarios/terminal_bench/eval_results/
+# Log files
+scenarios/terminal_bench/*.log
+# Dataset cache
+scenarios/terminal_bench/.dataset_cache/
 

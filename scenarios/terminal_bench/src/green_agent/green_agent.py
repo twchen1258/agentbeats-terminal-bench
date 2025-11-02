@@ -128,6 +128,7 @@ class TerminalBenchGreenAgentExecutor(AgentExecutor):
             "unknown": [],
         }
         task_scores_list = []
+        failure_mode_counts = {}
 
         base_output_dir = Path(settings.eval_output_path)
 
@@ -184,6 +185,23 @@ class TerminalBenchGreenAgentExecutor(AgentExecutor):
             difficulty = TASK_DIFFICULTY_MAP.get(task_id, "unknown")
             category_scores[difficulty].append(task_score)
 
+            if not result.is_resolved:
+                failure_mode = result.failure_mode
+                failure_mode_key = "unknown"
+                if failure_mode:
+                    failure_mode_key = (
+                        failure_mode.value
+                        if hasattr(failure_mode, "value")
+                        else str(failure_mode)
+                    )
+                
+                if failure_mode_key == "unset":
+                    failure_mode_key = "other (unset)"
+
+                failure_mode_counts[failure_mode_key] = failure_mode_counts.get(
+                    failure_mode_key, 0
+                ) + 1
+
             task_scores_list.append(
                 {
                     "id": task_id,
@@ -227,6 +245,15 @@ class TerminalBenchGreenAgentExecutor(AgentExecutor):
 
         overall_count = easy_count + medium_count + hard_count + unknown_count
 
+        failure_summary_message = ""
+        if failure_mode_counts:
+            failure_summary_message = "\nFailure Mode Summary:\n"
+            sorted_failures = sorted(
+                failure_mode_counts.items(), key=lambda item: item[1], reverse=True
+            )
+            for mode, count in sorted_failures:
+                failure_summary_message += f"- {mode}: {count}\n"
+
         message = f"""
 Terminal-Bench Evaluation Results
 =====================================
@@ -244,6 +271,8 @@ Scores by Difficulty (Unweighted Avg):
 """
         if unknown_count > 0:
             message += f"- Unknown: {unknown_avg:.2%} ({unknown_count} tasks) -- *Task ID not in TASK_DIFFICULTY_MAP*\n"
+
+        message += failure_summary_message
 
         if results.pass_at_k:
             message += "\nPass@k Metrics (based on is_resolved):\n"

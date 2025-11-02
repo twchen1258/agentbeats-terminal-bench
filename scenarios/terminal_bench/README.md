@@ -2,9 +2,15 @@
 
 A green agent that evaluates other agents on [terminal-bench](https://www.tbench.ai/) using the A2A protocol.
 
+**Note**: This README documents the standalone Terminal-Bench evaluation mode. For AgentBeats Platform integration, see [INTEGRATION.md](INTEGRATION.md).
+
 ## Overview
 
 This project implements a **green agent** (evaluator) that runs terminal-bench to evaluate **white agents** (agents under test). Communication between agents uses the A2A protocol, and white agents execute bash commands via task-scoped MCP servers.
+
+**Evaluation Modes**:
+- **Standalone Mode** (this README): Run evaluations directly without AgentBeats platform
+- **AgentBeats Platform Mode** (see [INTEGRATION.md](INTEGRATION.md)): Run evaluations through AgentBeats with web UI
 
 ### Key Features
 
@@ -115,28 +121,39 @@ python -m src.kickoff
 ## Project Structure
 
 ```
-terminal-bench-green-agent/
-├── src/
+scenarios/terminal_bench/
+├── agents/                      # AgentBeats integration layer
+│   ├── green_agent/
+│   │   ├── agent_card.toml     # AgentBeats agent card
+│   │   └── tools.py             # AgentBeats tool wrapper
+│   └── white_agent/
+│       ├── agent_card.toml     # AgentBeats agent card
+│       └── tools.py             # AgentBeats tool wrapper
+├── src/                         # Standalone Terminal-Bench code
 │   ├── green_agent/
 │   │   ├── green_agent.py      # Evaluator (runs terminal-bench)
 │   │   ├── task_mcp_server.py  # Task-scoped MCP servers
-│   │   └── card.toml            # Green agent A2A card
+│   │   └── card.toml            # A2A card (standalone mode)
 │   ├── adapters/
 │   │   └── a2a_adapter.py      # Terminal-bench ↔ A2A bridge
 │   ├── config/
 │   │   └── settings.py         # Configuration loader
 │   ├── utils/
 │   │   └── a2a_client.py       # A2A client utilities
-│   └── kickoff.py              # Evaluation initiator
-├── white_agent/
+│   └── kickoff.py              # Evaluation initiator (standalone mode)
+├── white_agent/                 # Standalone white agent
 │   ├── white_agent.py          # Example white agent
 │   └── white_agent_helpers.py  # MCP & LLM helpers
 ├── scripts/
 │   ├── setup.sh                # Installation script
 │   └── setup_dataset.py        # Dataset downloader
-├── config.toml                 # Configuration file
-├── requirements.txt            # Python dependencies
-└── eval_results/               # Evaluation results (generated)
+├── scenario.toml                # AgentBeats scenario configuration
+├── config.toml                  # Terminal-Bench configuration
+├── requirements.txt             # Python dependencies
+├── README.md                    # This file (standalone mode docs)
+├── SETUP.md                     # Setup guide
+├── INTEGRATION.md               # AgentBeats integration guide
+└── eval_results/                # Evaluation results (generated)
 ```
 
 ## Results Structure

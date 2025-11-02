@@ -24,7 +24,7 @@ The solve_terminal_bench_task tool will:
 
 Simply pass the entire message you receive to the solve_terminal_bench_task tool.
 """
-url = "http://localhost:8001/"
+url = "http://localhost:8002/"
 version = "1.0.0"
 
 defaultInputModes = ["text"]

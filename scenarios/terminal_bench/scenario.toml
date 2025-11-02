@@ -23,7 +23,7 @@ name = "white_agent_under_test"
 required = true
 participant_agent = "White Agent"
 
-# White Agent - Now integrated with AgentBeats using tools.py wrapper
+# White Agent - Integrated with AgentBeats using tools.py wrapper
 [[agents]]
 name = "White Agent"
 card = "agents/white_agent/agent_card.toml"
@@ -40,6 +40,6 @@ mcp_servers = []
 [launch]
 mode = "separate"  # Options: "tmux", "separate", "current"
 tmux_session_name = "agentbeats-terminal-bench"
-startup_interval = 10  # Increased to give agents time to fully start before registration
+startup_interval = 1
 wait_for_services = false
 
